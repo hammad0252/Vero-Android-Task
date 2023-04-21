@@ -19,7 +19,8 @@ import okhttp3.Response
 import java.io.IOException
 
 class AppViewModel (): ViewModel(){
-    var authToken by mutableStateOf("")
+    var accessToken by mutableStateOf("")
+    var taskList by mutableStateOf(emptyList<TaskClass>())
 
     init {
         viewModelScope.launch {
@@ -35,7 +36,6 @@ class AppViewModel (): ViewModel(){
             mediaType,
             "{\n        \"username\":\"365\",\n        \"password\":\"1\"\n}"
         )
-        Log.d("Retrofit", "About to send a request")
         val request = Request.Builder()
             .url("https://api.baubuddy.de/index.php/login")
             .post(body)
@@ -44,18 +44,39 @@ class AppViewModel (): ViewModel(){
             .build()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call?, e: IOException?) {
-                Log.d("Retrofit", "$e")
+                Log.d("API Call for Auth Token", "$e")
             }
-
             override fun onResponse(call: Call?, response: Response?) {
                 apiResponse = response?.body()?.string().toString()
-                Log.d("Retrofit", "Response Body is $apiResponse")
                 val gson = Gson()
-                val tutorialMap: Map<String, Any> = gson.fromJson(apiResponse, object : TypeToken<Map<String, Any>>() {}.type)
-                val oauth : Map<String, Any> = gson.fromJson(tutorialMap["oauth"].toString(), object : TypeToken<Map<String, Any>>() {}.type)
-                Log.d("Retrofit", "Response Body is ${oauth["access_token"]}")
-                authToken = oauth["access_token"].toString()
-                Log.d("Retrofit", "Auth Token is $authToken")
+                val jsonMap: Map<String, Any> = gson.fromJson(apiResponse, object : TypeToken<Map<String, Any>>() {}.type)
+                val oauthMap : Map<String, Any> = gson.fromJson(jsonMap["oauth"].toString(), object : TypeToken<Map<String, Any>>() {}.type)
+                accessToken = oauthMap["access_token"].toString()
+                getTaskList(accessToken)
+                Log.d("Retrofit", "Auth Token is $accessToken")
+            }
+        })
+    }
+
+    private fun getTaskList (accessToken : String){
+        var apiResponse = ""
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://api.baubuddy.de/dev/index.php/v1/tasks/select")
+            .get()
+            .addHeader("Authorization", "Bearer $accessToken")
+            .addHeader("Content-Type", "application/json")
+            .build()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                Log.d("API Call for Task List", "$e")
+            }
+            override fun onResponse(call: Call?, response: Response?) {
+                apiResponse = response?.body()?.string().toString()
+                val gson = Gson()
+                val taskListType = object : TypeToken<List<TaskClass>>() {}.type
+                taskList = gson.fromJson(apiResponse, taskListType)
+                Log.d("Retrofit", "Auth Token is $taskList")
             }
         })
     }

@@ -1,6 +1,7 @@
 package com.example.vero_android_task
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -18,16 +20,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,12 +42,12 @@ fun MainScreen(
         mutableStateOf(TextFieldValue(""))
     }
 
-    val taskList = remember {
-        mutableStateListOf<TaskClass>()
+    val taskList by remember {
+        mutableStateOf(mainViewModel.taskList)
     }
 
     val authToken by remember {
-        mutableStateOf(mainViewModel.authToken)
+        mutableStateOf(mainViewModel.accessToken)
     }
 
     Surface(Modifier.fillMaxSize()) {
@@ -53,7 +56,7 @@ fun MainScreen(
                 Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
-                    label = { Text(text = "Type to search....") },
+                    label = { Text(text = "Type to Search....") },
                     value = text,
                     onValueChange = {
                         text = it
@@ -83,7 +86,7 @@ fun MainScreen(
                 items(taskList) { currentTask ->
                     var color = Color.White
                     if (currentTask.colorCode != "") {
-                        color = Color(currentTask.colorCode.toInt())
+                        color = Color(currentTask.colorCode.toColorInt())
                     }
                     TaskDisplay(currentTask, color)
                 }
@@ -95,11 +98,20 @@ fun MainScreen(
 
 @Composable
 fun TaskDisplay(currentTask: TaskClass, color: Color) {
-    Surface(Modifier.padding(10.dp), color = color) {
-        Text(text = currentTask.task)
-        Text(text = currentTask.title)
-        Text(text = currentTask.description)
-        Text(text = currentTask.colorCode)
+    Surface(
+        Modifier
+            .padding(10.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10))
+            .border(2.dp, Color.Black, RoundedCornerShape(10)),
+        color = color
+    ) {
+        Column(Modifier.padding(10.dp)) {
+            Text(text = "Task : ${currentTask.task}")
+            Text(text = "Title : ${currentTask.title}")
+            Text(text = "Description : ${currentTask.description}")
+            Text(text = "Color Code : ${currentTask.colorCode}")
+        }
     }
 }
 
