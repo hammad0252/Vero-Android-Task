@@ -1,10 +1,12 @@
 package com.example.vero_android_task
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,8 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,17 +41,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun MainScreen(
     mainViewModel: AppViewModel = viewModel()
 ) {
-    var text by remember {
-        mutableStateOf(TextFieldValue(""))
-    }
+    val searchText by mainViewModel.searchText.collectAsState()
 
-    val taskList by remember {
-        mutableStateOf(mainViewModel.taskList)
-    }
-
-    val authToken by remember {
-        mutableStateOf(mainViewModel.accessToken)
-    }
+    val taskList by mainViewModel.taskList.collectAsState()
 
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.padding(10.dp)) {
@@ -57,9 +52,10 @@ fun MainScreen(
             ) {
                 OutlinedTextField(
                     label = { Text(text = "Type to Search....") },
-                    value = text,
+                    value = searchText,
+                    singleLine = true,
                     onValueChange = {
-                        text = it
+                        mainViewModel.setSearch(it)
                     }
                 )
                 Image(
@@ -74,7 +70,7 @@ fun MainScreen(
                 )
                 Button(modifier = Modifier.weight(1f),
                     onClick = {
-                        //TODO
+                        mainViewModel.search(searchText.toString())
                     }) {
                     Image(
                         painter = painterResource(id = R.drawable.baseline_search_24),
@@ -82,6 +78,7 @@ fun MainScreen(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
             LazyColumn() {
                 items(taskList) { currentTask ->
                     var color = Color.White
@@ -91,7 +88,6 @@ fun MainScreen(
                     TaskDisplay(currentTask, color)
                 }
             }
-            Text(text = authToken)
         }
     }
 }

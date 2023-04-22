@@ -1,6 +1,6 @@
 package com.example.vero_android_task
 
-data class TaskClass (
+data class TaskClass(
     val task: String,
     val title: String,
     val description: String,
@@ -13,30 +13,21 @@ data class TaskClass (
     val colorCode: String,
     val workingTime: Any? = null,
     val isAvailableInTimeTrackingKioskMode: Boolean
-)
-
-/*enum class BusinessUnit(val value: String) {
-    Empty(""),
-    Gerüstbau("Gerüstbau");
-
-    companion object {
-        public fun fromValue(value: String): BusinessUnit = when (value) {
-            ""          -> Empty
-            "Gerüstbau" -> Gerüstbau
-            else        -> throw IllegalArgumentException()
-        }
+) {
+    operator fun iterator(): List<Pair<String, Any?>> {
+        return listOf(
+            "task" to task,
+            "title" to title,
+            "description" to description,
+            "sort" to sort,
+            "wageType" to wageType,
+            "businessUnitKey" to businessUnitKey,
+            "businessUnit" to businessUnit,
+            "parentTaskID" to parentTaskID,
+            "preplanningBoardQuickSelect" to preplanningBoardQuickSelect,
+            "colorCode" to colorCode,
+            "workingTime" to workingTime,
+            "isAvailableInTimeTrackingKioskMode" to isAvailableInTimeTrackingKioskMode
+        )
     }
 }
-
-enum class ParentTaskID(val value: String) {
-    Empty(""),
-    The10Aufbau("10 Aufbau");
-
-    companion object {
-        public fun fromValue(value: String): ParentTaskID = when (value) {
-            ""          -> Empty
-            "10 Aufbau" -> The10Aufbau
-            else        -> throw IllegalArgumentException()
-        }
-    }
-}*/

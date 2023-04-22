@@ -1,13 +1,12 @@
 package com.example.vero_android_task
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
@@ -18,9 +17,15 @@ import okhttp3.RequestBody
 import okhttp3.Response
 import java.io.IOException
 
-class AppViewModel (): ViewModel(){
-    var accessToken by mutableStateOf("")
-    var taskList by mutableStateOf(emptyList<TaskClass>())
+class AppViewModel() : ViewModel() {
+
+    private var accessToken = ""
+    private var allTasksLists = emptyList<TaskClass>()
+    private var searchTasks = mutableListOf<TaskClass>()
+    private val _taskList = MutableStateFlow(emptyList<TaskClass>())
+    val taskList = _taskList.asStateFlow()
+    private val _searchText = MutableStateFlow("")
+    var searchText = _searchText.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -28,7 +33,32 @@ class AppViewModel (): ViewModel(){
         }
     }
 
-    private fun apiCall(){
+    fun setSearch(search : String){
+        _searchText.value = search
+    }
+
+    fun search(searchText: String) {
+        searchTasks.clear()
+        if (searchText != "") {
+            for (item in allTasksLists) {
+                for (prop in item.iterator()) {
+                    val propertyText = prop.second.toString().split(" ")
+                    for (word in propertyText) {
+                        if (searchText.lowercase() == word.lowercase()) {
+                            if (!searchTasks.contains(item)) {
+                                searchTasks.add(item)
+                            }
+                        }
+                    }
+                }
+            }
+            _taskList.value = searchTasks.toList()
+        } else {
+            _taskList.value = allTasksLists
+        }
+    }
+
+    private fun apiCall() {
         var apiResponse = ""
         val client = OkHttpClient()
         val mediaType = MediaType.parse("application/json")
@@ -44,21 +74,25 @@ class AppViewModel (): ViewModel(){
             .build()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call?, e: IOException?) {
-                Log.d("API Call for Auth Token", "$e")
+                Log.d("ErrorLog", "API call for auth token failed with exception $e")
             }
+
             override fun onResponse(call: Call?, response: Response?) {
                 apiResponse = response?.body()?.string().toString()
                 val gson = Gson()
-                val jsonMap: Map<String, Any> = gson.fromJson(apiResponse, object : TypeToken<Map<String, Any>>() {}.type)
-                val oauthMap : Map<String, Any> = gson.fromJson(jsonMap["oauth"].toString(), object : TypeToken<Map<String, Any>>() {}.type)
+                val jsonMap: Map<String, Any> =
+                    gson.fromJson(apiResponse, object : TypeToken<Map<String, Any>>() {}.type)
+                val oauthMap: Map<String, Any> = gson.fromJson(
+                    jsonMap["oauth"].toString(),
+                    object : TypeToken<Map<String, Any>>() {}.type
+                )
                 accessToken = oauthMap["access_token"].toString()
                 getTaskList(accessToken)
-                Log.d("Retrofit", "Auth Token is $accessToken")
             }
         })
     }
 
-    private fun getTaskList (accessToken : String){
+    private fun getTaskList(accessToken: String) {
         var apiResponse = ""
         val client = OkHttpClient()
         val request = Request.Builder()
@@ -69,14 +103,15 @@ class AppViewModel (): ViewModel(){
             .build()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call?, e: IOException?) {
-                Log.d("API Call for Task List", "$e")
+                Log.d("ErrorLog", "API call for task list failed with exception $e")
             }
+
             override fun onResponse(call: Call?, response: Response?) {
                 apiResponse = response?.body()?.string().toString()
                 val gson = Gson()
                 val taskListType = object : TypeToken<List<TaskClass>>() {}.type
-                taskList = gson.fromJson(apiResponse, taskListType)
-                Log.d("Retrofit", "Auth Token is $taskList")
+                allTasksLists = gson.fromJson(apiResponse, taskListType)
+                _taskList.value = allTasksLists
             }
         })
     }
