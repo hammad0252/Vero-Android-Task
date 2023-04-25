@@ -1,8 +1,7 @@
-package com.example.vero_android_task
+package com.example.vero_android_task.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
 import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,9 +13,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,9 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.vero_android_task.utils.QrCodeAnalyzer
@@ -39,11 +32,7 @@ fun QRScannerScreen(
     mainViewModel: AppViewModel,
     onNavigateToMain: () -> Unit
 ) {
-    Log.d("Retrofit", "IN QR SCREEN")
-
-    var code by remember {
-        mutableStateOf("")
-    }
+    var code = ""
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember {
@@ -91,6 +80,8 @@ fun QRScannerScreen(
                         ContextCompat.getMainExecutor(context),
                         QrCodeAnalyzer { result ->
                             code = result
+                            mainViewModel.setSearch(code)
+                            onNavigateToMain()
                         }
                     )
                     try {
@@ -107,18 +98,6 @@ fun QRScannerScreen(
                 },
                 modifier = Modifier.weight(1f)
             )
-            Text(
-                text = code,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp)
-            )
-            LaunchedEffect(key1 = "test") {
-                mainViewModel.setSearch(code)
-                onNavigateToMain()
-            }
         }
     }
 }

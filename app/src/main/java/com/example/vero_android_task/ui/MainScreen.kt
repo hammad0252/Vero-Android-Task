@@ -1,6 +1,5 @@
-package com.example.vero_android_task
+package com.example.vero_android_task.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
+import com.example.vero_android_task.R
 import com.example.vero_android_task.db.TaskClass
 import com.example.vero_android_task.vm.AppViewModel
 import kotlinx.coroutines.launch
@@ -48,9 +48,6 @@ fun MainScreen(
     mainViewModel: AppViewModel,
     onNavigateToQR: () -> Unit
 ) {
-
-    Log.d("Retrofit", "IN MAIN SCREEN")
-
     val searchText by mainViewModel.searchText.collectAsState()
     val taskList by mainViewModel.taskList.collectAsState()
     val refreshing by mainViewModel.refreshing.collectAsState()
@@ -84,7 +81,7 @@ fun MainScreen(
                         .height(40.dp)
                         .width(40.dp)
                         .clickable(
-                            onClick = onNavigateToQR
+                            onClick =  onNavigateToQR
                         )
                 )
                 Button(modifier = Modifier.weight(1f),

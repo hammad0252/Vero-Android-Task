@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.vero_android_task.ui.MainScreen
+import com.example.vero_android_task.ui.QRScannerScreen
 import com.example.vero_android_task.ui.theme.VeroAndroidTaskTheme
 import com.example.vero_android_task.utils.Constants
 import com.example.vero_android_task.vm.AppViewModel
