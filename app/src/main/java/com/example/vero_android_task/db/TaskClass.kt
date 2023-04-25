@@ -1,7 +1,11 @@
-package com.example.vero_android_task
+package com.example.vero_android_task.db
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "tasks")
 data class TaskClass(
-    val task: String,
+    @PrimaryKey val task: String,
     val title: String,
     val description: String,
     val sort: String,
@@ -9,9 +13,9 @@ data class TaskClass(
     val businessUnitKey: String? = null,
     val businessUnit: String = "",
     val parentTaskID: String = "",
-    val preplanningBoardQuickSelect: Any? = null,
+    val preplanningBoardQuickSelect: String? = null,
     val colorCode: String,
-    val workingTime: Any? = null,
+    val workingTime: String? = null,
     val isAvailableInTimeTrackingKioskMode: Boolean
 ) {
     operator fun iterator(): List<Pair<String, Any?>> {

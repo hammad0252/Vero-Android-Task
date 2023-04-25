@@ -1,9 +1,10 @@
 package com.example.vero_android_task
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -23,27 +28,41 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.vero_android_task.db.TaskClass
+import com.example.vero_android_task.vm.AppViewModel
+import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
+@ExperimentalMaterialApi
 @Composable
 fun MainScreen(
-    mainViewModel: AppViewModel = viewModel()
+    mainViewModel: AppViewModel,
+    onNavigateToQR: () -> Unit
 ) {
-    val searchText by mainViewModel.searchText.collectAsState()
 
+    Log.d("Retrofit", "IN MAIN SCREEN")
+
+    val searchText by mainViewModel.searchText.collectAsState()
     val taskList by mainViewModel.taskList.collectAsState()
+    val refreshing by mainViewModel.refreshing.collectAsState()
+    val refreshScope = rememberCoroutineScope()
+
+    fun refresh() = refreshScope.launch {
+        mainViewModel.setRefreshing(true)
+        mainViewModel.setSearch("")
+        mainViewModel.apiCall()
+    }
+
+    val state = rememberPullRefreshState(refreshing, ::refresh)
 
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.padding(10.dp)) {
@@ -64,13 +83,13 @@ fun MainScreen(
                     modifier = Modifier
                         .height(40.dp)
                         .width(40.dp)
-                        .clickable {
-                            //TODO
-                        }
+                        .clickable(
+                            onClick = onNavigateToQR
+                        )
                 )
                 Button(modifier = Modifier.weight(1f),
                     onClick = {
-                        mainViewModel.search(searchText.toString())
+                        mainViewModel.search(searchText)
                     }) {
                     Image(
                         painter = painterResource(id = R.drawable.baseline_search_24),
@@ -79,14 +98,18 @@ fun MainScreen(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            LazyColumn() {
-                items(taskList) { currentTask ->
-                    var color = Color.White
-                    if (currentTask.colorCode != "") {
-                        color = Color(currentTask.colorCode.toColorInt())
+            Box(Modifier.pullRefresh(state)) {
+                LazyColumn() {
+                    mainViewModel.setRefreshing(false)
+                    items(taskList) { currentTask ->
+                        var color = Color.White
+                        if (currentTask.colorCode != "") {
+                            color = Color(currentTask.colorCode.toColorInt())
+                        }
+                        TaskDisplay(currentTask, color)
                     }
-                    TaskDisplay(currentTask, color)
                 }
+                PullRefreshIndicator(refreshing, state, Modifier.align(Alignment.TopCenter))
             }
         }
     }
@@ -110,9 +133,3 @@ fun TaskDisplay(currentTask: TaskClass, color: Color) {
         }
     }
 }
-
-/*@Preview
-@Composable
-fun SimpleComposablePreview() {
-    MainScreen()
-}*/
