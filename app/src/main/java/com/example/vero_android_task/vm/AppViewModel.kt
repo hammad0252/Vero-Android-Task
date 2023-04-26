@@ -1,25 +1,15 @@
 package com.example.vero_android_task.vm
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.example.vero_android_task.db.TaskClass
 import com.example.vero_android_task.db.TaskDatabase
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.example.vero_android_task.repository.ApiCall
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.MediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
-import java.io.IOException
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -41,7 +31,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun getData(){
+    fun getData(){
         db = Room.databaseBuilder(
             context,
             TaskDatabase::class.java, "tasks"
@@ -53,7 +43,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         if (allTasksLists.isEmpty()){
-            apiCall()
+            val apiCall = ApiCall()
+            allTasksLists = apiCall.getData()
         }
     }
 
@@ -86,7 +77,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun apiCall() {
+    /*fun apiCall() {
         var apiResponse = ""
         val client = OkHttpClient()
         val mediaType = MediaType.parse("application/json")
@@ -150,5 +141,5 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         for (i in allTasksLists.indices){
             db.taskDao().insert(allTasksLists[i])
         }
-    }
+    }*/
 }

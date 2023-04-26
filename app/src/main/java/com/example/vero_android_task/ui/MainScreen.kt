@@ -56,7 +56,7 @@ fun MainScreen(
     fun refresh() = refreshScope.launch {
         mainViewModel.setRefreshing(true)
         mainViewModel.setSearch("")
-        mainViewModel.apiCall()
+        mainViewModel.getData()
     }
 
     val state = rememberPullRefreshState(refreshing, ::refresh)

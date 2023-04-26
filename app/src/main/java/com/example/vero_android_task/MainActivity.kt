@@ -13,13 +13,14 @@ import com.example.vero_android_task.ui.QRScannerScreen
 import com.example.vero_android_task.ui.theme.VeroAndroidTaskTheme
 import com.example.vero_android_task.utils.Constants
 import com.example.vero_android_task.vm.AppViewModel
+import com.example.vero_android_task.worker.MyWorker
 
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        MyWorker.start(context = applicationContext)
         setContent {
             VeroAndroidTaskTheme {
                 val navController = rememberNavController()
